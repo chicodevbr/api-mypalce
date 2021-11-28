@@ -1,8 +1,10 @@
 const express = require('express');
+const mongoose = require('mongoose');
 
 const HttpError = require('./models/http-error');
 const usersRoutes = require('./routes/users-routes');
 const placesRoutes = require('./routes/places-routes');
+const db = require('./config');
 
 const app = express();
 
@@ -24,4 +26,19 @@ app.use((error, res, next) => {
   res.json({ message: error.message || 'An unknown error ocurred' });
 });
 
-app.listen(5000);
+const url = db.url || process.env.MONGO_URI;
+
+const port = 5000 || process.env.PORT;
+
+mongoose
+  .connect(url)
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Server running on ${port}`);
+    });
+
+    console.log('MongoDB connected...');
+  })
+  .catch((error) => {
+    console.log(error);
+  });
